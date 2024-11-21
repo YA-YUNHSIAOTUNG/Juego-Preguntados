@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Juego de Preguntas</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f7f7f7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+      }
+
+      #game-container {
+        width: 600px;
+        height: 600px;
+        background-color: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        position: relative;
+      }
+
+      #title {
+        text-align: center;
+        font-size: 30px;
+        color: #333;
+        margin-bottom: 30px;
+      }
+
+      #score {
+        font-size: 20px;
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      #timer {
+        font-size: 20px;
+        color: #e53935;
+        margin-bottom: 30px;
+      }
+
+      #question-container {
+        font-size: 20px;
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .option {
+        padding: 15px;
+        background-color: #efefef;
+        margin: 10px 0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+      }
+
+      .option:hover {
+        background-color: #ffcc00;
+        transform: scale(1.05);
+      }
+
+      .option.correct {
+        background-color: #4caf50;
+      }
+
+      .option.incorrect {
+        background-color: #f44336;
+      }
+
+      #next-btn {
+        display: none;
+        padding: 15px;
+        background-color: #008cba;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background-color 0.3s ease;
+      }
+
+      #next-btn:hover {
+        background-color: #006f85;
+      }
+
+      #game-over {
+        text-align: center;
+        font-size: 30px;
+        color: #333;
+        margin-top: 40px;
+      }
+
+      #play-btn {
+        background-color: #008cba;
+        color: white;
+        padding: 15px 30px;
+        font-size: 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      #play-btn:hover {
+        background-color: #006f85;
+      }
+
+      #restart-btn {
+        display: none;
+        padding: 15px 30px;
+        background-color: #e53935;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background-color 0.3s ease;
+      }
+
+      #restart-btn:hover {
+        background-color: #d32f2f;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="game-container">
+      <div id="title">Juego de Preguntas</div>
+      <div id="score">Puntos: <span id="points">0</span></div>
+      <div id="timer">Tiempo restante: <span id="time">60</span> segundos</div>
+      <div id="question-container"></div>
+      <div id="options-container"></div>
+      <button id="next-btn" onclick="showNextQuestion()">Siguiente</button>
+      <div id="game-over" style="display: none">
+        ¡Juego Terminado! <br />
+        Puntuación Final: <span id="final-score"></span> <br /><br />
+        <button id="restart-btn" onclick="restartGame()">Reiniciar</button>
+      </div>
+      <button id="play-btn" onclick="startGame()">Jugar</button>
+    </div>
+
+    <script>
+      const questions = [
+        {
+          text: "¿Qué es un sistema de comunicación?",
+          options: [
+            "A) Un conjunto de personas que se comunican entre sí.",
+            "B) El proceso que transmite información entre un emisor y un receptor.",
+            "C) Un dispositivo que amplifica señales.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Cuáles son los componentes que ayudan a transmitir la información en un sistema de comunicación?",
+          options: [
+            "A) Emisor, Receptor, Medios de transmisión, Señal de luz, Proceso de codificación",
+            "B) Medios de transmisión, Mensaje, Traductor de texto, Protocolo, Transmisor",
+            "C) Emisor, Receptor, Medios de transmisión, Mensaje, Protocolo",
+          ],
+          answer: "C",
+        },
+        {
+          text: "¿Qué es un protocolo en comunicación?",
+          options: [
+            "A) Un código que define los bits de una señal.",
+            "B) Un conjunto de reglas para intercambiar datos correctamente.",
+            "C) Un medio de transmisión utilizado en redes.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Qué tipo de señal es continua y variable en el tiempo?",
+          options: [
+            "A) Señal digital",
+            "B) Señal analógica",
+            "C) Señal eléctrica",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Cuál es la principal diferencia entre señales analógicas y digitales?",
+          options: [
+            "A) Las analógicas tienen solo dos valores posibles, 0 y 1.",
+            "B) Las digitales son continuas, mientras que las analógicas son discretas.",
+            "C) Las digitales están representadas por números binarios, y las analógicas son continuas.",
+          ],
+          answer: "C",
+        },
+        {
+          text: "¿Qué es un mensaje en comunicación?",
+          options: [
+            "A) El mensaje es el contenido o la información que se transmite desde el emisor hasta el receptor.",
+            "B) El mensaje es solo el código usado para transmitir información.",
+            "C) El mensaje es la respuesta que da el receptor.",
+          ],
+          answer: "A",
+        },
+        {
+          text: "¿Qué componente recibe la señal en un sistema de comunicación?",
+          options: ["A) Medios", "B) Receptor", "C) Emisor"],
+          answer: "B",
+        },
+        {
+          text: "¿Qué es un medio de transmisión en un sistema de comunicación?",
+          options: [
+            "A) El equipo que envía la señal.",
+            "B) El canal por el que viajan las señales.",
+            "C) El protocolo utilizado para transmitir los datos.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Qué tipo de señal se usa comúnmente para transmitir datos a través de fibra óptica?",
+          options: [
+            "A) Señales eléctricas",
+            "B) Señales ópticas",
+            "C) Señales de radio",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Cómo se representa la información en un sistema de comunicación digital?",
+          options: [
+            "A) A través de cambios en la amplitud.",
+            "B) Mediante ondas continuas.",
+            "C) Usando números binarios (0s y 1s).",
+          ],
+          answer: "C",
+        },
+
+        // Sección 2 - Medios de transmisión
+        {
+          text: "¿Cuál de estos es un medio de transmisión guiado?",
+          options: ["A) Fibra óptica", "B) Radiofrecuencia", "C) Microondas"],
+          answer: "A",
+        },
+        {
+          text: "¿Qué tipo de cable utiliza un conductor central rodeado por aislamiento y una capa metálica?",
+          options: ["A) Par trenzado", "B) Coaxial", "C) Fibra óptica"],
+          answer: "B",
+        },
+        {
+          text: "¿Cuál es la principal ventaja de la fibra óptica?",
+          options: [
+            "A) Alta velocidad de transmisión",
+            "B) Bajo costo",
+            "C) Fácil instalación",
+          ],
+          answer: "A",
+        },
+        {
+          text: "¿Qué medio utiliza ondas electromagnéticas para transmitir señales sin cables?",
+          options: ["A) Coaxial", "B) Par trenzado", "C) Radiofrecuencia"],
+          answer: "C",
+        },
+        {
+          text: "¿Qué es la comunicación por satélite?",
+          options: [
+            "A) Uso de ondas de radio para transmitir señales.",
+            "B) Uso de satélites en órbita para transmitir datos.",
+            "C) Uso de cables submarinos para conectar continentes.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Cuál de estos es un medio de transmisión no guiado?",
+          options: ["A) Par trenzado.", "B) Fibra óptica.", "C) Microondas."],
+          answer: "C",
+        },
+        {
+          text: "¿Qué medio utiliza luz para transmitir información?",
+          options: [
+            "A) Fibra óptica.",
+            "B) Par trenzado.",
+            "C) Cable coaxial.",
+          ],
+          answer: "A",
+        },
+        {
+          text: "¿Qué técnica de transmisión se utiliza en los radios?",
+          options: [
+            "A) Modulación de frecuencia (FM).",
+            "B) Modulación por desplazamiento de fase (PSK).",
+            "C) Modulación en amplitud (AM).",
+          ],
+          answer: "A",
+        },
+        {
+          text: "¿Qué se entiende por control de flujo en redes?",
+          options: [
+            "A) Controlar la velocidad de transmisión de los datos.",
+            "B) Verificar la integridad de los datos.",
+            "C) Evitar que los datos se pierdan en la transmisión.",
+          ],
+          answer: "A",
+        },
+        {
+          text: "¿Qué es la verificación de redundancia cíclica (CRC)?",
+          options: [
+            "A) Un protocolo de transmisión.",
+            "B) Un método para verificar errores en los datos.",
+            "C) Una forma de compresión de datos.",
+          ],
+          answer: "B",
+        },
+
+        // Sección 3 - Modulación
+        {
+          text: "¿Qué hace la modulación en AM?",
+          options: [
+            "A) Varía la amplitud de la señal.",
+            "B) Varía la frecuencia de la señal.",
+            "C) Cambia la fase de la señal.",
+          ],
+          answer: "A",
+        },
+        {
+          text: "¿Qué es la modulación en frecuencia (FM)?",
+          options: [
+            "A) Modificar la amplitud de la señal.",
+            "B) Modificar la frecuencia de la señal.",
+            "C) Modificar la fase de la señal.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Qué tipo de modulación se usa para transmitir señales digitales?",
+          options: [
+            "A) AM y FM.",
+            "B) PSK, FSK, ASK.",
+            "C) Modulación analógica.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Qué es la modulación por desplazamiento de amplitud (ASK)?",
+          options: [
+            "A) Modificar la frecuencia de la señal para representar datos.",
+            "B) Modificar la amplitud de la señal para representar datos.",
+            "C) Modificar la fase de la señal para representar datos.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Qué significa muestreo en la conversión de señales analógicas a digitales?",
+          options: [
+            "A) Dividir una señal en frecuencias específicas.",
+            "B) Tomar muestras de una señal a intervalos regulares.",
+            "C) Modificar la amplitud de la señal.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Qué es la cuantización?",
+          options: [
+            "A) Establecer valores continuos para las señales.",
+            "B) Asignar valores discretos a las muestras tomadas de una señal.",
+            "C) Convertir señales analógicas a digitales.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Cuál es la principal ventaja de la modulación en cuadratura de amplitud (QAM)?",
+          options: [
+            "A) Mayor eficiencia en la transmisión de datos.",
+            "B) Baja velocidad de transmisión.",
+            "C) Simplicidad en la implementación.",
+          ],
+          answer: "A",
+        },
+        {
+          text: "¿Qué es la modulación de fase (PSK)?",
+          options: [
+            "A) Cambiar la amplitud de la señal.",
+            "B) Cambiar la frecuencia de la señal.",
+            "C) Cambiar la fase de la señal.",
+          ],
+          answer: "C",
+        },
+        {
+          text: "¿Qué tipo de modulación se usa en la transmisión de datos por cable de alta velocidad?",
+          options: ["A) AM.", "B) FM.", "C) QAM."],
+          answer: "C",
+        },
+        {
+          text: "¿Qué es un módem?",
+          options: [
+            "A) Un dispositivo que transmite señales por fibra óptica.",
+            "B) Un dispositivo que convierte señales digitales a analógicas y viceversa.",
+            "C) Un cable que transmite datos por radiofrecuencia.",
+          ],
+          answer: "B",
+        },
+
+        // Sección 4 - Técnicas de Conmutación y Multiplexación
+        {
+          text: "¿Qué es la conmutación de circuitos?",
+          options: [
+            "A) Se establece un canal dedicado entre emisor y receptor.",
+            "B) Los datos se dividen en paquetes para su transmisión.",
+            "C) Se transmiten los datos sin verificación de errores.",
+          ],
+          answer: "A",
+        },
+        {
+          text: "¿Qué es la conmutación de paquetes?",
+          options: [
+            "A) Los datos se transmiten sin dividirse.",
+            "B) Los datos se dividen en paquetes y se envían por diferentes rutas.",
+            "C) Solo un canal transmite todos los datos.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Qué es la multiplexación por división de tiempo (TDM)?",
+          options: [
+            "A) Se asignan diferentes frecuencias a cada señal.",
+            "B) Se asignan intervalos de tiempo a cada señal para que se transmitan.",
+            "C) Se usan diferentes longitudes de onda.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Qué es la multiplexación por división de frecuencia (FDM)?",
+          options: [
+            "A) Se asignan diferentes frecuencias para transmitir varias señales.",
+            "B) Se usan diferentes canales de longitud de onda.",
+            "C) Los datos se transmiten en intervalos de tiempo.",
+          ],
+          answer: "A",
+        },
+        {
+          text: "¿Qué técnica usa longitudes de onda distintas para transmitir datos simultáneamente?",
+          options: ["A) TDM.", "B) FDM.", "C) WDM."],
+          answer: "C",
+        },
+        {
+          text: "¿Qué es la multiplexación por división de código (CDM)?",
+          options: [
+            "A) Asignar diferentes códigos a las señales para transmitirlas juntas.",
+            "B) Usar diferentes frecuencias para cada señal.",
+            "C) Modificar la amplitud de la señal para cada usuario.",
+          ],
+          answer: "A",
+        },
+        {
+          text: "¿Qué significa ATM en conmutación?",
+          options: [
+            "A) Asynchronous Transfer Mode.",
+            "B) Automated Transfer Method.",
+            "C) Advanced Telecommunication Mode.",
+          ],
+          answer: "A",
+        },
+
+        // Sección 5 - Modelos y dispositivos de comunicación
+        {
+          text: "¿Qué es el modelo de referencia OSI?",
+          options: [
+            "A) Un modelo de comunicación que describe 7 capas para el intercambio de datos.",
+            "B) Un tipo de protocolo de internet.",
+            "C) Un sistema de codificación de señales en redes.",
+          ],
+          answer: "A",
+        },
+        {
+          text: "¿Cuántas capas tiene el modelo de referencia OSI?",
+          options: ["A) 5", "B) 7", "C) 3"],
+          answer: "B",
+        },
+        {
+          text: "¿Qué hace la capa de aplicación en el modelo OSI?",
+          options: [
+            "A) Establece las conexiones físicas entre dispositivos.",
+            "B) Proporciona servicios de red directamente a los usuarios.",
+            "C) Se encarga del enrutamiento de paquetes.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Qué capa del modelo OSI se encarga de la transmisión física de los datos?",
+          options: [
+            "A) Capa de enlace de datos.",
+            "B) Capa física.",
+            "C) Capa de aplicación.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Qué es un protocolo de comunicación?",
+          options: [
+            "A) Un tipo de dispositivo usado en redes.",
+            "B) Un conjunto de reglas para intercambiar datos.",
+            "C) Un software que controla el tráfico de la red.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Cuál de los siguientes es un protocolo común en redes de comunicaciones?",
+          options: ["A) HTTP.", "B) HTTP2.", "C) SSH."],
+          answer: "A",
+        },
+        {
+          text: "¿Qué función tiene un router en una red de comunicación?",
+          options: [
+            "A) Almacenar datos en la red.",
+            "B) Dirigir los paquetes de datos hacia su destino final.",
+            "C) Controlar el acceso de los dispositivos a la red.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Qué se entiende por estándar de interfaces?",
+          options: [
+            "A) Los procedimientos para hacer conexiones de red seguras.",
+            "B) Las especificaciones que definen cómo los dispositivos se conectan entre sí.",
+            "C) Las normas para el intercambio de señales dentro de un solo dispositivos.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Cuál es el propósito de los mecanismos de detección y corrección de errores?",
+          options: [
+            "A) Asegurar que los datos se transmitan a la mayor velocidad posible.",
+            "B) Detectar y corregir errores en los datos durante la transmisión.",
+            "C) Optimizar la cantidad de datos transmitidos.",
+          ],
+          answer: "B",
+        },
+        {
+          text: "¿Qué tipo de error se corrige típicamente con la verificación de redundancia cíclica (CRC)?",
+          options: [
+            "A) Errores en el formato de los datos.",
+            "B) Errores de codificación de la señal.",
+            "C) Errores en los datos transmitidos durante la comunicación.",
+          ],
+          answer: "C",
+        },
+
+        // Agregar más preguntas aquí
+      ];
+
+      let currentQuestionIndex = 0;
+      let score = 0;
+      let timeLeft = 60;
+      let timerInterval;
+      let gameOver = false;
+      const shuffleQuestions = shuffle(questions);
+
+      function startGame() {
+        document.getElementById("play-btn").style.display = "none";
+        document.getElementById("game-container").style.display = "block";
+        startTimer();
+        showQuestion();
+      }
+
+      function startTimer() {
+        timerInterval = setInterval(function () {
+          timeLeft--;
+          document.getElementById("time").textContent = timeLeft;
+
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            gameOver = true;
+            showGameOver();
+          }
+        }, 1000);
+      }
+
+      function showQuestion() {
+        if (currentQuestionIndex >= shuffleQuestions.length) {
+          gameOver = true;
+          showGameOver();
+          return;
+        }
+
+        const currentQuestion = shuffleQuestions[currentQuestionIndex];
+        document.getElementById("question-container").textContent =
+          currentQuestion.text;
+        document.getElementById("options-container").innerHTML = "";
+
+        currentQuestion.options.forEach((option, index) => {
+          const optionBtn = document.createElement("div");
+          optionBtn.classList.add("option");
+          optionBtn.textContent = option;
+          optionBtn.onclick = function () {
+            checkAnswer(option, currentQuestion.answer);
+          };
+          document.getElementById("options-container").appendChild(optionBtn);
+        });
+
+        document.getElementById("next-btn").style.display = "none";
+      }
+
+      function shuffle(array) {
+        for (let i = 0; i < array.length; i++) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      function checkAnswer(selectedOption, correctAnswer) {
+        const options = document.querySelectorAll(".option");
+        options.forEach((option) => {
+          if (option.textContent.startsWith(correctAnswer)) {
+            option.classList.add("correct");
+          } else {
+            option.classList.add("incorrect");
+          }
+        });
+
+        if (selectedOption.startsWith(correctAnswer)) {
+          score++;
+          document.getElementById("points").textContent = score;
+        }
+
+        document.getElementById("next-btn").style.display = "block";
+      }
+
+      function showNextQuestion() {
+        currentQuestionIndex++;
+        showQuestion();
+      }
+
+      function showGameOver() {
+        document.getElementById("game-over").style.display = "block";
+        document.getElementById("final-score").textContent = score;
+        document.getElementById("restart-btn").style.display = "block";
+      }
+
+      function restartGame() {
+        location.reload();
+      }
+    </script>
+  </body>
+</html>
